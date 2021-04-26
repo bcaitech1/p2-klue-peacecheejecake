@@ -1,0 +1,76 @@
+system: &default_system_config
+  device: "cuda:0"
+  num_workers: 8
+
+
+path: &default_path_config
+  input: '/opt/ml/input'
+  train: '/opt/ml/input/data/train/train.csv'
+  test: '/opt/ml/input/data/test/test.csv'
+  valid: 
+  submit: '/opt/ml/output/submissions'
+  checkpoint: '/opt/ml/output/checkpoints'
+  logs: #'/opt/ml/output/logs'
+
+
+data: &default_data_config
+  num_classes: 42
+  dataset_class: EntityPreMarkedAndEncodedDatasetForElectra
+  tokenizer_class: ElectraTokenizer
+  max_token_length: 150 #
+  valid_ratio: 0
+  upscaling: False
+  sampler: 
+  batch_size: 32
+  num_folds: 1
+
+
+train: &default_train_config
+  experiment_name: koelectra-premark-encode-concat
+  resuming_state: 
+    
+  lr:
+    base: 5.0e-5
+    min: 
+    scheduler: CosineAnnealingAfterWarmUpAndHardRestartScheduler
+    warmup_steps: 300
+    cycle_steps: 150
+    damping_ratio: 0.1
+  weight_decay: 1.0e-4
+  betas: [0.9, 0.999]
+  momentum: 0.9
+  nesterov: False
+  criterion: FocalAndCrossEntropyLoss
+  optimizer:
+    name: AdamW
+  
+  num_epochs: 8
+  valid_iter_limit: 0
+  
+  valid_min_epoch: 1
+  test_min_epoch: 1
+  save_min_epoch: 7
+
+  valid_period: 1
+  test_period: 0
+  save_period: 1
+
+  valid_min_acc: 0
+  test_min_acc: 1
+  save_min_acc: 0
+
+  stop_count: 3
+
+  #wandb options
+  logger: neptune ### TODO: manual / wandb / neptune?
+
+
+model: &default_model_config
+  arc: ElectraForPreMarkedSequenceConcatClassification
+  pretrained_id: monologg/koelectra-base-v3-discriminator
+  name: koelectra
+  last_head_idx: 0
+
+teacher:
+  arc:
+  state_path: 

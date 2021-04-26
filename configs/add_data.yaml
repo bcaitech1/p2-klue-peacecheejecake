@@ -1,0 +1,70 @@
+system: &default_system_config
+  device: "cuda:0"
+  num_workers: 8
+
+
+path: &default_path_config
+  input: '/opt/ml/input'
+  train: '/opt/ml/input/data/5folds/fold0/train.csv'
+  test: '/opt/ml/input/data/test/test.csv'
+  valid: '/opt/ml/input/data/5folds/fold0/valid.csv'
+  submit: '/opt/ml/output/submissions'
+  checkpoint: '/opt/ml/output/checkpoints'
+  logs: '/opt/ml/output/logs'
+
+
+data: &default_data_config
+  num_classes: 42
+  dataset_class: BasicDatasetForElectra
+  tokenizer_class: BertTokenizer
+  valid_ratio: 0
+  upscaling: False
+  sampler: 
+  batch_size: 16
+
+
+train: &default_train_config
+  resuming_state: 
+  experiment_name: koelectra+raw_naive_5fold
+    
+  lr:
+    base: 5.0e-6
+    min: 
+    scheduler: CosineAnnealingAfterWarmUpScheduler
+    warmup_steps: 10000
+  weight_decay: 1.0e-4
+  betas: [0.9, 0.999]
+  momentum: 0.9
+  nesterov: False
+  criterion: CrossEntropyLoss
+  optimizer:
+    name: AdamW
+  
+  num_epochs: 7
+  valid_iter_limit: 0
+  
+  valid_min_epoch: 1
+  test_min_epoch: 1
+  save_min_epoch: 1
+
+  valid_period: 1
+  test_period: 0
+  save_period: 1
+
+  valid_min_acc: 0
+  test_min_acc: 1
+  save_min_acc: 0
+
+  #wandb options
+  logger: manual ### TODO: manual / wandb / neptune?
+
+
+model: &default_model_config
+  arc: BasicElectraForSequenceClassification
+  pretrained_id: monologg/koelectra-base-v3-discriminator
+  name: koelectra-base-dis-clf-add
+  last_head_idx: 0
+
+teacher:
+  arc:
+  state_path: 
