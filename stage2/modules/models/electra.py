@@ -35,14 +35,12 @@ class BasicElectraForSequenceClassification(BasicModel):
             raise NotImplementedError
         
         self.num_labels = num_labels
-
     
     def forward(self, **inputs):
         x = self.electra(**inputs)
         x = x.last_hidden_state[:, 0, :]
         x = self.classifier(x)
         return x
-
 
 
 class ElectraForPreMarkedSequenceClassification(BasicElectraForSequenceClassification):
@@ -112,17 +110,3 @@ class ElectraForPreMarkedSequenceConcatClassification(ElectraForPreMarkedSequenc
         x += x0
 
         return x
-
-
-
-
-class BasicXlmRobertaForSequenceClassification(BasicModel):
-    def __init__(
-        self, 
-        name: str = 'ko-electra',
-        model_config = None,
-        pretrained_id: str = "monologg/koelectra-base-v3-discriminator",
-        num_labels: int = 42,
-        dropout_rate: float = 0.5,
-    ):
-        pass

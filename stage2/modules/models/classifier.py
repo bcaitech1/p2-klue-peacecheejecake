@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-
 class MultiheadClassifier(BasicModel):
     def __init__(self, in_features: int, label_weight: int = 0.5, out_features: int = 18, name='classifier'):
         super(MultiheadClassifier, self).__init__(name)
@@ -20,7 +19,6 @@ class MultiheadClassifier(BasicModel):
         self.mask_classifier = nn.Linear(in_features, 3)
 
         self.label_classifier = nn.Linear(in_features, out_features)
-
     
     def _forward_impl(self, x):
         age = self.age_classifier(x)

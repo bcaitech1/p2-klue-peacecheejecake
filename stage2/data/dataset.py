@@ -15,35 +15,13 @@ from transformers import PreTrainedTokenizer
 ##########################################
 # DATASET ################################
 ##########################################   
-        
-
-# class BasicDatasetForTransformers(Dataset):
-#     def __init__(
-#         self, 
-#         data_path: str, 
-#         labeled: bool
-#     ):
-#         super(BasicDatasetForTransformers, self).__init__()
-#         self.data_path = data_path
-#         self.labeled = labeled
-#         self.num_classes = 42
-        
-        
-#     def __getitem__(self, idx: int):
-#         raise NotImplementedError
     
-    
-#     def __len__(self):
-#         return len(self.data)
-
-
 
 class BasicDatasetForElectra(Dataset):
     num_classes = 42
 
     with open('/opt/ml/input/data/label_type.pkl', 'rb') as f:
         label2idx = pickle.load(f)
-
 
     def __init__(
         self, 
@@ -61,7 +39,6 @@ class BasicDatasetForElectra(Dataset):
     
         self.tokenize()
 
-
     def __getitem__(self, idx: int):
         inputs = {key: value[idx].clone() for key, value in self.tokenized_data.items()}
         if self.labels is not None:
@@ -70,8 +47,7 @@ class BasicDatasetForElectra(Dataset):
             return inputs, label
         else:
             return inputs
-   
-    
+       
     def tokenize(self):
         entities = []
         sentences = []
@@ -93,7 +69,6 @@ class BasicDatasetForElectra(Dataset):
             max_length=self.max_length,
             add_special_tokens=True
         )
-
 
     def __len__(self):
         return len(self.data)
@@ -157,16 +132,12 @@ class EntityPreMarkedDatasetForElectra(BasicDatasetForElectra):
                   + sentence[e2e + 1:] + f' ❗ {entity1} ✅ ' + sentence[e1e + 1:]
                 )
             marked_sentences.append(sentence)
-            # entities.append(entity1 + '[SEP]' + entity2)
 
             tokenized_sentence = self.tokenizer.encode(sentence)
             entity1_token_start = tokenized_sentence.index(self.tokenizer.encode("❗")[1])
             entity2_token_start = tokenized_sentence.index(self.tokenizer.encode("✨")[1])
             entity1_token_end = tokenized_sentence.index(self.tokenizer.encode("✅")[1])
             entity2_token_end = tokenized_sentence.index(self.tokenizer.encode("⭐")[1])
-
-            # assert entity1_token_end < self.max_length, entity1_token_end
-            # assert entity2_token_end < self.max_length, entity2_token_end
 
             entity1_starts.append(entity1_token_start)
             entity2_starts.append(entity2_token_start)
@@ -189,15 +160,12 @@ class EntityPreMarkedDatasetForElectra(BasicDatasetForElectra):
         return entity1_starts, entity1_ends, entity2_starts, entity2_ends
 
 
-
-
 class EntityPreMarkedAndEncodedDatasetForElectra(EntityPreMarkedDatasetForElectra):
     def tokenize(self):
         entity1_starts, entity1_ends, entity2_starts, entity2_ends = super().tokenize()
         for i, (e1_start, e1_end, e2_start, e2_end) in enumerate(zip(entity1_starts, entity1_ends, entity2_starts, entity2_ends)):
             self.tokenized_data['attention_mask'][i, e1_start+1:e1_end] += 1
             self.tokenized_data['attention_mask'][i, e2_start+1:e2_end] += 1
-
 
 
 class EntityPreMarkedDatasetForXLMRoberta(BasicDatasetForElectra):
@@ -264,7 +232,6 @@ class EntityPreMarkedDatasetForXLMRoberta(BasicDatasetForElectra):
         return entity1_starts, entity1_ends, entity2_starts, entity2_ends
 
 
-
 class EntityPreMarkedAndEncodedDatasetForXLMRoberta(EntityPreMarkedDatasetForXLMRoberta):
     def tokenize(self):
         entity1_starts, entity1_ends, entity2_starts, entity2_ends = super().tokenize()
@@ -273,17 +240,7 @@ class EntityPreMarkedAndEncodedDatasetForXLMRoberta(EntityPreMarkedDatasetForXLM
             self.tokenized_data['attention_mask'][i, e2_start:e2_end+1] += 1
 
 
-
-
-
-
-
-
 class ClassifiedEntityMarkedDatasetForElectra(BasicDatasetForElectra):
-    def add_entity_tokens(self):
-        pass
-
-    
     def tokenize(self):
         entities = []
         marked_sentences = []
@@ -307,42 +264,3 @@ class ClassifiedEntityMarkedDatasetForElectra(BasicDatasetForElectra):
             max_length=self.max_length,
             add_special_tokens=True
         )
-
-
-
-
-
-# class UpscaledDataset(BasicDatasetForElectra):
-#     def __init__(
-#         self
-#     ):
-#         """Need to add parameter :labeled: to implement TTA."""
-#         super(UpscaledDataset, self).__init__()
-#         pass
-
-
-#     def __getitem__(self, idx):
-#         pass
-        
-
-#     def upscale_data_with_random_aug(self):
-#         upscaled_data = []
-        
-#         num_augments = len(self.augments) + 1
-#         num_classes = self.__class__.NUM_CLASSES
-
-#         labels_on_data = [int(path.split('/')[-1][:2]) for path in self.data]
-#         class_counter = Counter(labels_on_data)
-#         max_class, max_count = class_counter.most_common(1)[0]
-
-#         for class_idx in range(num_classes):
-#             data_in_class = np.array([path for path in self.data if int(path.split('/')[-1][:2]) == class_idx])
-#             random_indices = np.random.randint(0, class_counter[class_idx], max_count)
-#             random_augments = np.random.randint(0, num_augments + 1, max_count)
-#             upscaled_data += zip(data_in_class[random_indices], random_augments)
-        
-#         self.data = upscaled_data
-
-
-#     def __str__(self):
-#         return f"Dataset upscaled with random augmentations. {self.original_size} -> {len(self)}"

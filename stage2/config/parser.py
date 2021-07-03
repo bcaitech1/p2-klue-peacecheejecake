@@ -20,7 +20,6 @@ class YAMLConfigParser:
         config = ConfigBranch(**config)
         return config
 
-
     @staticmethod
     def load_separate_all(system, path, data, train, model):
         with open(system) as yamlfile:
@@ -44,12 +43,10 @@ class YAMLConfigParser:
 
         return config
     
-
     @staticmethod
     def save(config, saving_path):
         with open(saving_path, 'w') as yamlfile:
             yaml.dump(config, yamlfile)
-
 
 
 def load_config_from_yaml(config_file):
@@ -58,4 +55,3 @@ def load_config_from_yaml(config_file):
     if config.train.logger == 'manual':
         config.train.logger = CSVLogger()
     return config
-
