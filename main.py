@@ -10,9 +10,8 @@ import argparse
 # from pathlib import Path
 
 
-
 if __name__ == '__main__':
-    argparser = argparse.ArgumentParser()#argument_default="--train")
+    argparser = argparse.ArgumentParser()
     argparser.add_argument("--train", action='store_true')
     argparser.add_argument("--valid", action='store_true')
     argparser.add_argument("--eval", action='store_true')

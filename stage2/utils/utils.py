@@ -89,13 +89,10 @@ except:
     load_state_dict_from_url = torch.utils.model_zoo.load_url
 
 
-
-
 class ConfusionMatrix:
     def __init__(self, num_classes: int):
         self.num_classes = num_classes
         self._reset()
-
 
     def __call__(self, targets: torch.Tensor, predictions: torch.Tensor):
         assert targets.shape == predictions.shape
@@ -112,7 +109,6 @@ class ConfusionMatrix:
                 new_info[prediction, target] += 1
 
         self.matrix += new_info
-                
 
     def __add__(self, value):
         if not isinstance(value, ConfusionMatrix):
@@ -122,23 +118,18 @@ class ConfusionMatrix:
 
         return self
     
-
     def _reset(self):
         self.matrix = self._new_matrix()
-
     
     def _new_matrix(self):
         return torch.zeros((self.num_classes, self.num_classes), dtype=torch.float)
 
-
     def recall(self):
         return (self.matrix / self.matrix.sum(dim=0)).diagonal().mean().item()
-
 
     def precision(self):
         return (self.matrix / self.matrix.sum(dim=1)).diagonal().mean().item()
 
-    
     def f1_score(self):
         # return hmean([self.recall(), self.precision()])
         return 2 / (1 / self.recall() + 1 / self.precision())

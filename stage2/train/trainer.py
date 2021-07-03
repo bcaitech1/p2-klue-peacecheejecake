@@ -46,19 +46,15 @@ import neptune
 from typing import Iterable
 
 
-
-## TODO: create and separate :class TrainerConfig:
 class Trainer:
     def __init__(self, config: ConfigBranch):
         self.config = config
         self._setup()
  
-
     def __call__(self):
         self._setup()
         return self
         
-
     def _setup(self):
         print("Start initial setup for trainer.")
 
@@ -119,7 +115,6 @@ class Trainer:
         #     epoch = start_epoch
         # else:
         #     epoch = self.logger(self.log_files)
-
     
     def _reset_for_new_fold(self):
         # models
@@ -142,7 +137,6 @@ class Trainer:
         if self.config.train.resuming_state:
             self.load_state_dicts()
 
-    
     def _update_optimizer(self):
         optim_name = self.config.train.optimizer.name.lower()
         lr = self.config.train.lr.base
@@ -194,7 +188,6 @@ class Trainer:
         else:
             raise NameError("Register proper optimizer if needed")
 
-
     def _set_scheduler(self):
         if self.config.train.lr.scheduler is None:
             self.scheduler = lr_scheduler.ConstantScheduler(
@@ -230,7 +223,6 @@ class Trainer:
                 damping_ratio=self.config.train.lr.damping_ratio,
             )
 
-
     def _set_loss_function(self):
         try:
             LossForTraining = getattr(loss, self.config.train.criterion)
@@ -253,7 +245,6 @@ class Trainer:
             else:
                 raise ValueError    
 
-
     def _data_loader(self, dataset: Dataset, shuffle: bool) -> DataLoader:
         return DataLoader(
             dataset, 
@@ -262,7 +253,6 @@ class Trainer:
             num_workers=self.config.system.num_workers, 
             pin_memory=True
         )
-
 
     def _load_data_loaders(self):
         DatasetForTraining = getattr(dataset, self.config.data.dataset_class)
@@ -358,20 +348,11 @@ class Trainer:
         )
         self.test_loader = self._data_loader(test_set, shuffle=False)
 
-
     def _load_tokenizer(self):
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.config.data.tokenizer_class,
             self.config.model.pretrained_id
         )
-
-        # if self.config.data.add_entity_tokens:
-        #     add_special_tokens(
-        #         tokenizer=self.tokenizer, 
-        #         model=self.model.electra, 
-        #         add_type='simple'
-        #     )
-
 
     def load_state_dicts(self, resuming_state: str = None):
         r'''
@@ -383,7 +364,6 @@ class Trainer:
         self.load_state_dict_to_model(resuming_state)
         if self.scheduler is not None:
             self.load_state_dict_to_scheduler(resuming_state)
-
 
     def load_state_dict_to_model(self, resuming_state: str = None):
         r'''
@@ -415,7 +395,6 @@ class Trainer:
             else:
                 print(f"WARNING: failed to load state dict for model - could not find the path.")
 
-
     def load_state_dict_to_scheduler(self, resuming_state: str):
         r'''
         :resuming_state: prefix for saved scheduler
@@ -436,7 +415,6 @@ class Trainer:
             else:
                 print(f"WARNING: failed to load state dict for scheduler - could not find the path.")
 
-
     def _prepare_inputs(self, inputs):
         if isinstance(inputs, dict):
             for key, value in inputs.items():
@@ -444,7 +422,6 @@ class Trainer:
         else:
             inputs = inputs.to(self.ldevice)
         return inputs
-
 
     def _train_info(self):
         print()
@@ -481,7 +458,6 @@ class Trainer:
 
         print()
         print(f">>> Start of traning ({self.num_folds} folds, {self.config.train.num_epochs} epochs).")
-
 
     def train_and_save(self):
         self._train_info()
@@ -549,87 +525,6 @@ class Trainer:
                     else:
                         save_with_name()
             
-            # if fold_idx == 0:
-            #     resuming_state = '2021-04-22-20_06_13.826937_fold0_'
-            #     self.load_state_dicts(resuming_state=resuming_state)
-            #     best_in_fold = [0.7572222222222222, resuming_state]
-            #     not_saved_count = 0#
-            #     for epoch in range(4, self.config.train.num_epochs):
-            #         ## TODO: implement early-stop -- by moving average
-            #         if not_saved_count >= self.config.train.stop_count:
-            #             break
-
-            #         epoch += 1
-            #         train_loss, train_acc = self.train_one_epoch(epoch=epoch)
-            #         neptune.log_metric(f'{self.config.train.experiment_name}_epoch_loss', train_loss)
-            #         neptune.log_metric(f'{self.config.train.experiment_name}_epoch_acc', train_acc)
-                        
-            #         # valid
-            #         if (
-            #             self.valid_loaders and
-            #             self.config.train.valid_period > 0 and
-            #             epoch >= self.config.train.valid_min_epoch and
-            #             epoch % self.config.train.valid_period == 0
-            #         ):
-            #             valid_loss, valid_acc = self.valid(epoch=epoch)
-
-            #             neptune.log_metric(f'{self.config.train.experiment_name}_valid_loss', valid_loss)
-            #             neptune.log_metric(f'{self.config.train.experiment_name}_valid_acc', valid_acc)
-
-            #         # save
-            #         if (
-            #             self.config.train.save_period > 0 and
-            #             epoch >= self.config.train.save_min_epoch and
-            #             epoch % self.config.train.save_period == 0
-            #         ):
-            #             best_acc, best_model = best_in_fold
-            #             if best_acc < valid_acc:
-            #                 self.remove_state_dicts(best_model)
-            #                 best_in_fold = [valid_acc, save_with_name()]
-            #                 not_saved_count = 0
-            #             else:
-            #                 not_saved_count += 1
-            # else:
-            #     self._reset_for_new_fold()
-
-            #     best_in_fold = [0, '']
-            #     not_saved_count = 0
-            #     for epoch in range(self.config.train.num_epochs):
-            #         ## TODO: implement early-stop -- by moving average
-            #         if not_saved_count >= self.config.train.stop_count:
-            #             break
-
-            #         epoch += 1
-            #         train_loss, train_acc = self.train_one_epoch(epoch=epoch)
-            #         neptune.log_metric(f'{self.config.train.experiment_name}_epoch_loss', train_loss)
-            #         neptune.log_metric(f'{self.config.train.experiment_name}_epoch_acc', train_acc)
-                        
-            #         # valid
-            #         if (
-            #             self.valid_loaders and
-            #             self.config.train.valid_period > 0 and
-            #             epoch >= self.config.train.valid_min_epoch and
-            #             epoch % self.config.train.valid_period == 0
-            #         ):
-            #             valid_loss, valid_acc = self.valid(epoch=epoch)
-
-            #             neptune.log_metric(f'{self.config.train.experiment_name}_valid_loss', valid_loss)
-            #             neptune.log_metric(f'{self.config.train.experiment_name}_valid_acc', valid_acc)
-
-            #         # save
-            #         if (
-            #             self.config.train.save_period > 0 and
-            #             epoch >= self.config.train.save_min_epoch and
-            #             epoch % self.config.train.save_period == 0
-            #         ):
-            #             best_acc, best_model = best_in_fold
-            #             if best_acc < valid_acc:
-            #                 self.remove_state_dicts(best_model)
-            #                 best_in_fold = [valid_acc, save_with_name()]
-            #                 not_saved_count = 0
-            #             else:
-            #                 not_saved_count += 1
-
             if self.valid_loaders:
                 self.best_models.append(best_in_fold[1])
                 print(f"Best accuracy: {best_in_fold[1]}")
@@ -643,7 +538,6 @@ class Trainer:
 
         # self.empty_checkpoints_except_bests()
 
-        
     def train_one_epoch(self, epoch: int = 0, add_loader: DataLoader = None):
         print(f"[Epoch {epoch:03d}]", end="")
         
@@ -746,7 +640,6 @@ class Trainer:
         # )
 
         return epoch_loss, epoch_accuracy
-
         
     def valid(self, epoch: int = None):
         epoch = f" {epoch:03d}" if epoch is not None else ""
@@ -805,7 +698,6 @@ class Trainer:
 
         return valid_loss, accuracy
         
-        
     def save_state_dicts(self, name="", postfix=None):
         file_name = f'{filename_from_datetime(datetime.today())}_{name}_{postfix if postfix else ""}'
         
@@ -823,7 +715,6 @@ class Trainer:
 
         return file_name
 
-
     def infer(self):
         if self.device == torch.device("cpu"):
             starter = time()
@@ -838,7 +729,6 @@ class Trainer:
 
         total_batch_num = test_size / self.config.data.batch_size
         total_batch_num = math.ceil(total_batch_num)
-
         
         with torch.no_grad():
             if self.config.path.valid is None and self.num_folds > 1:
@@ -898,7 +788,6 @@ class Trainer:
         
         return result
 
-                
     def infer_and_save_result(self):
         result = self.infer()
 
@@ -914,7 +803,6 @@ class Trainer:
         print(f"\rSaved result: {csv_path}")
 
         return csv_path
-
 
     def empty_checkpoints_except_bests(self):
         for fold_idx, out_name in enumerate(self.best_models):
@@ -933,7 +821,6 @@ class Trainer:
         
         print("Rearanged files for evaluation.")
 
-
     def remove_state_dicts(self, filename):
         filepath_base = os.path.join(self.config.path.checkpoint, filename)
         
@@ -946,53 +833,6 @@ class Trainer:
         if os.path.exists(scheduler_path):
             os.remove(scheduler_path)
             print(f"Removed scheduler: {scheduler_path}")
-
-
-
-    # def infer_with_simple_tta(self, augments: Iterable = None):
-    #     if not augments: augments = SimpleTTA.augments
-
-    #     self.model.eval()
-
-    #     test_size = len(self.test_loader.dataset)
-    #     batch_size = self.config.data.batch_size
-    #     total_batch_num = math.ceil(test_size / batch_size)
-        
-    #     with torch.no_grad():
-    #         logits_all = torch.zeros((test_size, self.config.data.num_classes), dtype=torch.float).to(self.device)
-    #         for aug_idx, augment in enumerate(augments):
-    #             test_loader = self._data_loader(
-    #                 dataset=SimpleTTADataset(self.test_loader.dataset.data, augment),
-    #                 shuffle=False
-    #             )
-
-    #             logits = torch.zeros((test_size, self.config.data.num_classes), dtype=torch.float).to(self.device)
-    #             for batch_idx, (inputs, _) in enumerate(test_loader):
-    #                 inputs = inputs.to(self.device)
-    #                 outputs = F.log_softmax(self.model(inputs), dim=1)
-    #                 logits[batch_idx * batch_size: (batch_idx + 1) * batch_size] = outputs
-                    
-    #                 print(f"\rEvaluating #{aug_idx + 1}/{len(augments)} ({batch_idx + 1}/{total_batch_num})", end="")
-
-    #             logits_all += logits.detach()
-
-    #     print()
-    #     print(f"End of evaluation.")
-
-
-    #     indices = [path.split('/')[-1] for path in self.test_loader.dataset.data]
-    #     result = pd.DataFrame(columns=['ans'], index=indices)
-    #     result.index.name = 'ImageID'
-    #     result.ans = torch.argmax(logits_all, dim=1).cpu().numpy()
-
-    #     info_file = pd.read_csv(
-    #         os.path.join(self.config.path.output, 'info.csv'),
-    #         index_col='ImageID'
-    #     )
-    #     result = result.loc[info_file.index]
-        
-    #     return result
-
 
 
 def ensemble_and_infer_test(

@@ -10,7 +10,6 @@ path: &default_path_config
   valid: 
   submit: '/opt/ml/output/submissions'
   checkpoint: '/opt/ml/output/checkpoints'
-  logs: #'/opt/ml/output/logs'
 
 
 data: &default_data_config
@@ -62,7 +61,7 @@ train: &default_train_config
   stop_count: 5
 
   #wandb options
-  logger: neptune ### TODO: manual / wandb / neptune?
+  logger: neptune
 
 
 model: &default_model_config

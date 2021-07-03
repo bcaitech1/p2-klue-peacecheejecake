@@ -6,7 +6,6 @@ from torch.nn.modules.loss import CrossEntropyLoss
 torch_loss_dict = torch.nn.modules.loss.__dict__
 
 
-
 # https://discuss.pytorch.org/t/is-this-a-correct-implementation-for-focal-loss-in-pytorch/43327/8
 class FocalLoss(nn.Module):
     def __init__(self, weight=None,
@@ -28,7 +27,6 @@ class FocalLoss(nn.Module):
         )
 
 
-
 class FocalAndCrossEntropyLoss(nn.Module):
     def __init__(self, avg_weight: float = 0.2):
         super(FocalAndCrossEntropyLoss, self).__init__()
@@ -43,7 +41,6 @@ class FocalAndCrossEntropyLoss(nn.Module):
         )
 
 
-
 class LabelSmoothingLoss(nn.Module):
     def __init__(self, classes=3, smoothing=0.0, dim=-1):
         super(LabelSmoothingLoss, self).__init__()
@@ -52,7 +49,6 @@ class LabelSmoothingLoss(nn.Module):
         self.cls = classes
         self.dim = dim
 
-
     def forward(self, pred, target):
         pred = pred.log_softmax(dim=self.dim)
         with torch.no_grad():
@@ -60,7 +56,6 @@ class LabelSmoothingLoss(nn.Module):
             true_dist.fill_(self.smoothing / (self.cls - 1))
             true_dist.scatter_(1, target.data.unsqueeze(1), self.confidence)
         return torch.mean(torch.sum(-true_dist * pred, dim=self.dim))
-
 
 
 # https://gist.github.com/SuperShinyEyes/dcc68a08ff8b615442e3bc6a9b55a354
@@ -89,7 +84,6 @@ class F1Loss(nn.Module):
         f1 = f1.clamp(min=self.epsilon, max=1 - self.epsilon)
         
         return 1 - f1.mean()
-
 
 
 # https://github.com/cvqluu/Angular-Penalty-Softmax-Losses-Pytorch/blob/master/loss_functions.py
@@ -122,7 +116,6 @@ class AngularPenaltySMLoss(nn.Module):
         self.fc = nn.Linear(in_features, out_features, bias=False)
         self.eps = eps
 
-
     def forward(self, x, labels):
         '''
         input shape (N, in_features)
@@ -153,7 +146,6 @@ class AngularPenaltySMLoss(nn.Module):
         return -torch.mean(L)
 
 
-
 class CrossEntropyLossAfterSoftmax(nn.Module):
     def __init__(self):
         super(CrossEntropyLossAfterSoftmax, self).__init__()
@@ -172,12 +164,10 @@ class CrossEntropyLossAfterSoftmax(nn.Module):
         return torch.mean(log_comparisons, dim=0)
 
 
-
 # class SoftKLDivLoss(nn.Module):
 #     def __init__(self, T: float = 1.0):
 #         super(SoftKLDivLoss, self).__init__()
 #         self.T = T
-
 
 #     def forward(self, predictions, targets):
 #         predictions = F.softmax(predictions / self.T, dim=1)
@@ -185,12 +175,10 @@ class CrossEntropyLossAfterSoftmax(nn.Module):
 #         return (targets * torch.log(targets / predictions)).sum().mean()
 
 
-
 class SoftCrossEntropyLoss(nn.Module):
     def __init__(self, T: float = 1.0):
         super(SoftCrossEntropyLoss, self).__init__()
         self.T = T
-
 
     def forward(self, predictions, targets):
         predictions = F.softmax(predictions / self.T, dim=1)
@@ -204,7 +192,6 @@ class KDLoss(nn.Module):
         self.T = T
         self.alpha = alpha
         self.num_classes = num_classes
-
 
     def forward(self, student_outputs, teacher_outputs, targets):
         student_outputs_soft = F.softmax(student_outputs / self.T, dim=1)

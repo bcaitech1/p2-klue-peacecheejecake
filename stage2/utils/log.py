@@ -1,10 +1,8 @@
 import csv
 import os
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 from typing import Iterable
-
-
 
 
 class CSVLogger():
@@ -14,14 +12,12 @@ class CSVLogger():
         self.train_file = ''
         self.valid_file = ''
 
-
     def __call__(self, csvfiles: Iterable):
         self.train_file, self.valid_file = csvfiles
         self.load_from_csv()
         self.cleanup()
 
         return self.epochs()
-
 
     def load_from_csv(self):
         try:
@@ -35,7 +31,6 @@ class CSVLogger():
             print("WARNING: no valid data loaded.")
 
         return self.epochs()
-
     
     def load_train_from_csv(self):
         if self.train:
@@ -53,7 +48,6 @@ class CSVLogger():
                         self.train.append([int(epoch), float(loss), float(accuracy)])
                     else:
                         raise ValueError("Wrong form: cannot load from csv file")
-
     
     def load_valid_from_csv(self):
         if self.valid:
@@ -71,12 +65,10 @@ class CSVLogger():
                         self.valid.append([int(epoch), float(loss), float(accuracy), state])
                     else:
                         raise ValueError("Wrong form: cannot load from csv file")
-                    
 
     def save_to_csv(self):
         self.save_train_to_csv()
         self.save_valid_to_csv()
-
 
     def save_train_to_csv(self):
         if self.train_file:
@@ -87,7 +79,6 @@ class CSVLogger():
         else:
             raise ValueError("Failed to write on train file.")
 
-
     def save_valid_to_csv(self):
         if self.valid_file:
             with open(self.valid_file, 'w', newline='') as f:
@@ -97,14 +88,11 @@ class CSVLogger():
         else:
             raise ValueError("Failed to write on valid file.")
 
-
     def log_last_train_to_csv(self):
         self.log_train_to_csv(*self.train[-1])
-
     
     def log_last_valid_to_csv(self):
         self.log_valid_to_csv(*self.valid[-1])
-    
 
     def log_train_to_csv(self, *values):
         if self.train_file:
@@ -113,7 +101,6 @@ class CSVLogger():
                 writer.writerow(values)
         else:
             raise ValueError("Failed to write on train file.")
-
     
     def log_valid_to_csv(self, *values):
         if self.train_file:
@@ -123,11 +110,9 @@ class CSVLogger():
         else:
             raise ValueError("Failed to write on valid file.")
 
-
     def recover(self, dest_epoch: int):
         self.recover_train(dest_epoch=dest_epoch)
         self.recover_valid(dest_epoch=dest_epoch)
-
 
     def recover_train(self, dest_epoch: int):
         '''train needs cleanup first.
@@ -139,7 +124,6 @@ class CSVLogger():
             last_idx = epochs.index(dest_epoch)
             self.train = self.train[:last_idx + 1]
 
-
     def recover_valid(self, dest_epoch: int):
         '''valid needs cleanup first.
         '''
@@ -150,11 +134,9 @@ class CSVLogger():
             last_idx = epochs.index(dest_epoch)
             self.valid = self.valid[:last_idx + 1]
 
-    
     def __str__(self):
         str_ = f"({len(self.train)} train and {len(self.valid)} valid logs)"
         return str_
-
 
     def epochs(self):
         if self.train:
@@ -162,11 +144,9 @@ class CSVLogger():
         else:
             return 0
 
-
     def log(self, train, valid):
         self.log_train(*train)
         self.log_valid(*valid)
-
 
     def log_train(self, *values):
         '''
@@ -174,21 +154,17 @@ class CSVLogger():
         '''
         self.train.append(list(values))
 
-    
     def log_valid(self, *values):
         '''
         :values: [epoch, loss, accuracy, checkpoint]
         '''
         self.valid.append(list(values))
 
-
     def delete_train_logs(self, num_to_del):
         self.train = self.train[:-num_to_del]
 
-
     def delete_valid_logs(self, num_to_del):
         self.train = self.train[:-num_to_del]
-
 
     def cleanup(self):
         epochs = []
@@ -216,18 +192,15 @@ class CSVLogger():
 
         return deleted_train_logs, deleted_valid_logs
 
-    
     def get_losses(self):
         train_losses = [x[1] for x in self.train]
         valid_losses = [x[1] for x in self.valid]
         return list(*zip(train_losses, valid_losses))
-
     
     def get_accuracies(self):
         train_accuracies = [x[2] for x in self.train]
         valid_accuracies = [x[2] for x in self.valid]
         return list(*zip(train_accuracies, valid_accuracies))
-
 
     def plot(self, suptitle=None):
         train_epoch, train_loss, train_acc = zip(*self.train)

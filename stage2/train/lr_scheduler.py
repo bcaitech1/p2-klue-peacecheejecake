@@ -13,16 +13,13 @@ class ConstantScheduler(_LRScheduler):
         self.lr = lr
         super(ConstantScheduler, self).__init__(optimizer=optimizer, verbose=verbose)
 
-
     def get_lr(self):
         return self.lr
-
 
     def step(self):
         for i in range(len(self.optimizer.param_groups)):
             self.print_lr(self.verbose, i, self.lr)
         self._step_count += 1
-
 
 
 class CosineAnnealingAfterWarmUpScheduler(_LRScheduler):
@@ -43,7 +40,6 @@ class CosineAnnealingAfterWarmUpScheduler(_LRScheduler):
         self.damping_ratio = damping_ratio
         super(CosineAnnealingAfterWarmUpScheduler, self).__init__(optimizer=optimizer, verbose=verbose)
 
-
     def get_lr(self):
         if self._step_count < self.warmup_steps:
             return self.min_lr + (self.max_lr - self.min_lr) / self.warmup_steps * self._step_count
@@ -53,7 +49,6 @@ class CosineAnnealingAfterWarmUpScheduler(_LRScheduler):
             else:
                 x = (self._step_count - self.warmup_steps) / 2 * math.pi
             return self.min_lr + (self.max_lr - self.min_lr) * math.cos(x)
-
 
     def step(self):
         lr = self.get_lr()
@@ -73,7 +68,6 @@ class CosineAnnealingAfterWarmUpAndHardRestartScheduler(CosineAnnealingAfterWarm
         else:
             x = ((self._step_count - self.warmup_steps) % self.cycle_steps) / (2 * self.cycle_steps) * math.pi
             return self.min_lr + (self.max_lr - self.min_lr) * math.cos(x)
-
 
 
 # code from https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup/blob/master/cosine_annearing_with_warmup.py
@@ -118,14 +112,12 @@ class CosineAnnealingWarmupRestarts(_LRScheduler):
         # set learning rate min_lr
         self.init_lr()
     
-    
     def init_lr(self):
         self.base_lrs = []
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.min_lr
             self.base_lrs.append(self.min_lr)
     
-
     def get_lr(self):
         if self.step_in_cycle == -1:
             return self.base_lrs
@@ -136,7 +128,6 @@ class CosineAnnealingWarmupRestarts(_LRScheduler):
                     * (1 + math.cos(math.pi * (self.step_in_cycle-self.warmup_steps) \
                                     / (self.cur_cycle_steps - self.warmup_steps))) / 2
                     for base_lr in self.base_lrs]
-
 
     def step(self, epoch=None):
         if epoch is None:
