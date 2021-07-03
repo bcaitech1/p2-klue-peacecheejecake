@@ -1,11 +1,5 @@
 # Stage 02 - Relation Extraction (KLUE)
 
-### Example
-* 학습 후 추론하기
-```bash
-python main.py --train --eval --config my_config.yaml
-```
-
 ## Overview
 문장 내 subject와 object 사이의 관계 추출을 위한 코드입니다.
 
@@ -164,4 +158,10 @@ config에 따라 별도의 validation file을 불러오거나, train dataset을 
 
 ```shell
 python main.py --valid --resuming_state [--config] [--empty_logs]
+```
+
+### Another Example
+* 학습 후 추론하기
+```bash
+python main.py --train --eval --config my_config.yaml
 ```
